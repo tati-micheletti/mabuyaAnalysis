@@ -1,0 +1,949 @@
+---
+title: "Fueling a predator death-trap: data analysis"
+author: "T. Micheletti"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: true
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.width = 10, fig.height = 6)
+```
+
+# Introduction
+
+This analysis examines Mabuya (Trachylepis atlantica; skink) populations across three distinct sites (i.e., Secondary Islands, PARNAMAR and APA) on Fernando de Noronha archipelago, investigating how invasive species presence and food supplementation affect population density, body size, and injury rates.
+
+## Study Area Context
+
+The study encompasses the following areas:
+
+- **Main Island: 16.89 km²**
+  - PARNAMAR: 11.424 km²
+  - APA: 5.466 km²
+- **Secondary Islands: 1.33 km²**
+- **TOTAL PARNA: 12.754 km²**
+- **TOTAL TERRESTRIAL AREA (PARNA + APA): 18.22 km²**
+
+# Package Setup
+
+We'll use the `Require` package for better dependency management across all analyses.
+
+```{r packages}
+if(!require("Require")){
+  install.packages("Require")
+}
+library("Require")
+
+Require::Require("data.table")
+Require::Require("emmeans")
+Require::Require("DHARMa")
+Require::Require("glmmTMB")
+Require::Require("performance")
+Require::Require("RMark")
+Require::Require("xlsx")
+Require::Require("ggplot2")
+Require::Require("multcompView")
+Require::Require("dplyr")
+```
+
+# Survey Effort Analysis
+
+Before analyzing the biological data, we assesed whether our sampling effort was balanced across the study area.
+
+## Loading Density Data
+
+```{r load-density-data}
+mabuia_dd <- fread("data/Density_Data.csv")
+```
+
+## Calculating Sampling Effort Distribution
+
+```{r survey-effort-calc}
+pointsCounts <- mabuia_dd[, .N, by = "Site"]
+pointsCounts[Site == "APA", pointsArea := 5.466]
+pointsCounts[Site == "PARNA", pointsArea := 11.424]
+pointsCounts[Site == "Secundaria", pointsArea := 1.33]
+pointsCounts[, pointsDensity := N/pointsArea]
+pointsCounts[, propPoints := N/(sum(pointsCounts[, N]))]
+pointsCounts[, propSize := pointsArea/(sum(pointsCounts[, pointsArea]))]
+
+print("Survey effort distribution:")
+print(pointsCounts)
+```
+
+## Survey Effort Assessment
+
+There is indeed a bit of unbalance but it is not as critical as it seems:
+
+- **APA**: 39% points over 30% area
+- **PARNA**: 37% points over 62% area  
+- **Secondary**: 25% points over 7% area
+
+The sampling is reasonably proportional to area, with only modest over-sampling of Secondary Islands and slight under-sampling of PARNAMAR relative to area.
+
+# Population Density Analysis
+
+## Step 1: Survey Area Calculation
+
+Each survey point was a circle with 2m radius, giving us a standardized survey area.
+
+```{r survey-area}
+mabuia_dd[, survey_area := pi * (2^2)]
+print(paste("Survey area per point:", round(mabuia_dd$survey_area[1], 3), "m²"))
+```
+
+The survey area is approximately 12.566 m² per point, which we'll use as an offset in our density models.
+
+## Step 2: Creating Predictor Variables
+
+We need to convert site identity into ecologically meaningful predictor variables based on site characteristics.
+
+```{r create-predictors}
+siteLevels <- factor(c("APA", "PARNA", "Secundaria"),
+                       levels = c("APA", "PARNA", "Secundaria"))
+
+# Invasive Species Presence (assuming key invasives like Cats and Tejus are largely absent from Secondary Islands)
+mabuia_dd[Site == "APA", InvasiveSpeciesPresence := 1]
+mabuia_dd[Site == "PARNA", InvasiveSpeciesPresence := 1]
+mabuia_dd[Site == "Secundaria", InvasiveSpeciesPresence := 0]
+
+# Food Supplementation
+mabuia_dd[Site == "APA", FoodSupplementation := 1]
+mabuia_dd[Site == "PARNA", FoodSupplementation := 0]
+mabuia_dd[Site == "Secundaria", FoodSupplementation := 0]
+
+# Convert to factors for modeling
+mabuia_dd[, InvasiveSpeciesPresence := as.factor(InvasiveSpeciesPresence)]
+mabuia_dd[, FoodSupplementation := as.factor(FoodSupplementation)]
+head(mabuia_dd)
+```
+
+This creates a 2x2 factorial design where we can test the independent and interactive effects of invasive species presence and food supplementation.
+
+## Step 3: Fitting the Main Density Model
+
+We use a negative binomial GLM because count data often shows overdispersion (variance > mean).
+
+```{r main-density-model}
+model_hierarchical_main <- MASS::glm.nb(
+  Counts ~ InvasiveSpeciesPresence + FoodSupplementation + offset(log(survey_area)),
+  data = mabuia_dd,
+  na.action = na.omit
+)
+summary(model_hierarchical_main)
+```
+
+The offset term `log(survey_area)` allows us to model density (individuals per unit area) rather than raw counts.
+
+## Step 4: Model Validation
+
+Good model validation is critical for reliable inference.
+
+```{r model-validation}
+r2(model_hierarchical_main)
+```
+
+```{r residual-diagnostics}
+sim_res <- simulateResiduals(model_hierarchical_main)
+plot(sim_res)
+```
+
+DHARMa provides robust residual diagnostics by simulating from the fitted model. Good residuals should show uniform distribution in QQ plots and no patterns in residual vs. fitted plots.
+
+## Step 5: Alternative Model Formulations
+
+We test several alternative model structures to ensure we've chosen the best approach.
+
+### Interaction Model
+
+```{r interaction-model}
+model_interaction <- MASS::glm.nb(
+  Counts ~ InvasiveSpeciesPresence * FoodSupplementation + offset(log(survey_area)),
+  data = mabuia_dd
+)
+summary(model_interaction)
+```
+
+### Mixed Effects Models
+
+```{r mixed-models}
+model_random <- glmmTMB::glmmTMB(
+  Counts ~ InvasiveSpeciesPresence + FoodSupplementation + offset(log(survey_area)) + (1 | Site),
+  family = nbinom2,
+  data = mabuia_dd
+)
+summary(model_random)
+
+model_random_interaction <- glmmTMB::glmmTMB(
+  Counts ~ InvasiveSpeciesPresence * FoodSupplementation + offset(log(survey_area)) + (1 | Site),
+  family = nbinom2,
+  data = mabuia_dd
+)
+summary(model_random_interaction)
+```
+
+### Model Selection
+
+```{r model-selection}
+model_comparison <- AIC(
+  model_hierarchical_main,      # Original glm.nb model
+  model_interaction,            # GLM with interaction
+  model_random,                 # GLMM with random effect
+  model_random_interaction      # GLMM with both interaction + random
+)
+print("Model AIC Comparison:")
+print(model_comparison)
+```
+
+**Conclusion**: The original model has the best AIC, is interpretable, answers the ecological question clearly, and passes all residual diagnostics.
+
+## Step 6: Estimated Marginal Means
+
+```{r emmeans-density}
+emm_density_hierarchical <- emmeans(model_hierarchical_main,
+                                    specs = ~ InvasiveSpeciesPresence + FoodSupplementation,
+                                    type = "response",
+                                    offset = 0)
+
+summary(emm_density_hierarchical, infer = TRUE)
+```
+
+Setting `offset = 0` gives us density per unit area rather than total abundance.
+
+## Step 7: Creating the Density Visualization
+
+### Data Preparation for Plotting
+
+```{r plot-data-prep}
+density_df <- as.data.frame(summary(emm_density_hierarchical, infer = TRUE))
+
+# Map factor combinations to meaningful site names
+density_df$Site <- ifelse(
+  density_df$InvasiveSpeciesPresence == 0 & density_df$FoodSupplementation == 1, "Hypothetical Site",
+  ifelse(
+    density_df$InvasiveSpeciesPresence == 0 & density_df$FoodSupplementation == 0, "Secondary Islands",
+    ifelse(
+      density_df$InvasiveSpeciesPresence == 1 & density_df$FoodSupplementation == 1, "APA",
+      "PARNAMAR"
+    )
+  )
+)
+
+density_df$Site <- factor(density_df$Site, levels = c("Hypothetical Site", "Secondary Islands", "APA", "PARNAMAR"))
+
+# Rename columns for clarity
+names(density_df)[names(density_df) == 'response'] <- 'mean_density'
+names(density_df)[names(density_df) == 'asymp.LCL'] <- 'lower_ci'
+names(density_df)[names(density_df) == 'asymp.UCL'] <- 'upper_ci'
+print(density_df)
+```
+
+### Statistical Significance Testing
+
+```{r significance-testing}
+pairs_emm <- contrast(emm_density_hierarchical, method = "pairwise", adjust = "tukey")
+summary_pw <- summary(pairs_emm)
+p_values <- summary_pw$p.value
+print(p_values)
+```
+
+### Processing Significance Letters
+
+```{r significance-letters}
+# Helper function to clean emmeans factor level names
+clean_level_name <- function(level_string) {
+  cleaned <- gsub("InvasiveSpeciesPresence", "", level_string)
+  cleaned <- gsub("FoodSupplementation", "", cleaned)
+  cleaned <- gsub(" ", "", cleaned)
+  return(cleaned)
+}
+
+contrast_names_raw <- as.character(summary_pw$contrast)
+p_value_names <- sapply(contrast_names_raw, function(contrast) {
+  parts <- strsplit(contrast, " / ")[[1]]
+  key1 <- clean_level_name(trimws(parts[1]))
+  key2 <- clean_level_name(trimws(parts[2]))
+  return(paste(key1, key2, sep = "-"))
+})
+names(p_values) <- p_value_names
+
+# Generate significance letters
+letters_result <- multcompLetters(p_values)
+significance_letters <- letters_result$Letters
+
+# Add letters to plotting data
+density_df$key <- paste0(density_df$InvasiveSpeciesPresence, density_df$FoodSupplementation)
+density_df$significance_group <- significance_letters[density_df$key]
+density_df$y_position_for_text <- density_df$upper_ci + 0.05
+```
+
+### Creating the Final Density Plot
+
+```{r density-plot}
+two_line_labels <- c(
+  "Hypothetical\n(Subsidies / Reduced Predators)",
+  "Secondary Islands\n(No Subsidies / Reduced Predators)",
+  "APA\n(Subsidies / Full Predators)",
+  "PARNAMAR\n(No Subsidies / Full Predators)"
+)
+
+# density_plot <- ggplot(density_df, aes(x = Site, y = mean_density, fill = Site)) +
+#   geom_bar(stat = "identity", color = "black", alpha = 0.8) +
+#   geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci),
+#                 width = 0.2, color = "black", linewidth = 0.5) +
+#   geom_text(aes(y = y_position_for_text, label = significance_group),
+#             size = 6, fontface = "bold", color = "black") +
+#   scale_x_discrete(labels = two_line_labels) +
+#   scale_fill_viridis_d(option = "D") +
+#   labs(y = expression("Estimated Density (individuals / m"^2*")")) +
+#   theme_bw(base_size = 14) +
+#   theme(
+#     axis.title = element_text(face = "bold"),
+#     axis.text.x = element_text(face = "bold"),
+#     axis.title.x = element_blank(),
+#     panel.grid.major.x = element_blank(),
+#     panel.grid.minor = element_blank(),
+#     legend.position = "none"
+#   )
+# 
+# print(density_plot)
+
+density_plot <- ggplot(density_df, aes(x = Site, y = mean_density, fill = Site)) +
+  # Add bars and error bars from the GLM
+  geom_bar(stat = "identity", color = "black", alpha = 0.8) +
+  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci),
+                width = 0.2, color = "black", linewidth = 0.5) +
+  # Add significance letters from the GLM
+  geom_text(aes(y = y_position_for_text, label = significance_group),
+            size = 6, fontface = "bold", color = "black") +
+
+  # --- ANNOTATION FOR CMR RESULT ---
+  # Add a bracket connecting APA and PARNAMAR bars
+  annotate("segment", x = "APA", xend = "PARNAMAR", y = 0.40, yend = 0.40,
+           color = "black", linewidth = 0.7) +
+  # New position for the left vertical tick (pointing down).
+  annotate("segment", x = "APA", xend = "APA", y = 0.40, yend = 0.38,
+           color = "black", linewidth = 0.7) +
+  # New position for the right vertical tick (pointing down).
+  annotate("segment", x = "PARNAMAR", xend = "PARNAMAR", y = 0.40, yend = 0.38,
+           color = "black", linewidth = 0.7) +
+  # New position for the text, slightly above the bracket line.
+  annotate("text", x = 3.5, y = 0.43, label = "CMR confirms APA > PARNAMAR (p < 0.001)",
+           fontface = "italic", color = "black", size = 4) +
+
+  # --- SCALES, LABELS, and THEMING ---
+  scale_x_discrete(labels = two_line_labels) +
+  scale_fill_viridis_d(option = "D") +
+  labs(
+    y = expression("Estimated Density (individuals / m"^2*")")
+  ) +
+  theme_bw(base_size = 14) +
+  theme(
+    axis.title = element_text(face = "bold"),
+    axis.text.x = element_text(face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "none"
+  )
+
+print(density_plot)
+```
+
+# Mark-Recapture Analysis
+
+Analysis was performed using the Poisson-log normal mark-resight model to separate detection probability from true abundance.
+
+## Step 1: Loading CMR Data
+
+```{r load-cmr-data}
+ch <- read.xlsx(file = file.path(getwd(), "data/CRM_Data.xlsx"), 
+                header = TRUE, 
+                sheetName = "ch", 
+                as.data.frame = TRUE)
+ch$ch <- as.character(ch$ch)
+ch$colonies <- as.factor(ch$colonies)
+
+covars <- read.xlsx(file = file.path(getwd(), "data/CRM_Data.xlsx"), 
+                    header = TRUE, 
+                    sheetName = "covars", 
+                    as.data.frame = TRUE)
+```
+
+## Step 2: Creating Model Variables
+
+```{r cmr-variables}
+nocc <- 6  # Number of occasions
+groupsNames <- unique(covars$colonies)
+nGroups <- length(groupsNames)
+
+# Create matrices for different count types
+unmarkedSeen <- matrix(covars[, "unmarkedSeen"],
+                       nrow = nGroups,
+                       ncol = nocc,
+                       byrow = TRUE)
+
+markedUnidentified <- matrix(covars[, "markedUnidentified"],
+                             nrow = nGroups,
+                             ncol = nocc,
+                             byrow = TRUE)
+
+knownMarks <- matrix(covars[, "knownMarks"],
+                     nrow = nGroups,
+                     ncol = nocc,
+                     byrow = TRUE)
+
+effort <- matrix(covars[, "effort"],
+                 nrow = nGroups,
+                 ncol = nocc,
+                 byrow = TRUE)
+
+site <- matrix(covars[, "site"],
+                 nrow = nGroups,
+                 ncol = nocc,
+                 byrow = TRUE)
+```
+
+## Step 3: Data Processing
+
+```{r cmr-processing}
+mabuya.process <- process.data(ch,
+                               model = "PoissonMR",
+                               time.intervals = rep(1, times = (nocc-1)),
+                               groups = "colonies",
+                               counts = list("Unmarked Seen" = unmarkedSeen,
+                                             "Marked Unidentified" = markedUnidentified,
+                                             "Known Marks" = knownMarks))
+
+mabuya.ddl <- make.design.data(mabuya.process)
+```
+
+## Step 4: Adding Covariates
+
+Now we include covariates such as effort and site type where they should be placed.
+
+### For Alpha (Detection Probability)
+
+```{r alpha-covariates}
+mabuya.ddl$alpha$effort <- as.numeric(apply(X = mabuya.ddl$alpha, 1, function(x){
+  col <- x[["group"]]
+  occ <- as.numeric(x[["time"]])
+  eff <- covars[covars$colonies==col&covars$occasion==occ, "effort"]
+}))
+
+mabuya.ddl$alpha$site <- as.character(apply(X = mabuya.ddl$alpha, 1, function(x){
+  col <- x[["group"]]
+  occ <- as.numeric(x[["time"]])
+  site <- covars[covars$colonies==col&covars$occasion==occ, "site"]
+}))
+```
+
+### For U (Abundance)
+
+```{r u-covariates}
+mabuya.ddl$U$site <- as.character(apply(X = mabuya.ddl$U, 1, function(x){
+  col <- x[["group"]]
+  occ <- as.numeric(x[["time"]])
+  site <- covars[covars$colonies==col&covars$occasion==occ, "site"]
+}))
+```
+
+## Step 5: Defining Model Formulas
+
+```{r model-formulas}
+# Parameter formulas for alpha (detection probability)
+alpha.dot <- list(formula = ~ 1)
+alpha.effort <- list(formula = ~ effort)
+alpha.site <- list(formula = ~ site)
+alpha.additive <- list(formula = ~ effort + site)
+alpha.interaction <- list(formula = ~ effort * site)
+
+# Parameters that will be the same in all models
+U.site <- list(formula = ~ site)
+Phi.fixed1 <- list(formula = ~ 1, fixed = 1)
+zero <- list(formula = ~ 1, fixed = 0)  # For sigma and Gammas
+```
+
+## Step 6: Building Model List
+
+```{r model-list}
+model.list <- list(
+  "alpha(.) U(site)" = list(
+    alpha = alpha.dot, 
+    U = U.site, 
+    Phi = Phi.fixed1,
+    sigma = zero, 
+    GammaDoublePrime = zero, 
+    GammaPrime = zero
+  ),
+  "alpha(effort) U(site)" = list(
+    alpha = alpha.effort, 
+    U = U.site, 
+    Phi = Phi.fixed1,
+    sigma = zero, 
+    GammaDoublePrime = zero, 
+    GammaPrime = zero
+  ),
+  "alpha(site) U(site)" = list(
+    alpha = alpha.site, 
+    U = U.site, 
+    Phi = Phi.fixed1,
+    sigma = zero, 
+    GammaDoublePrime = zero, 
+    GammaPrime = zero
+  ),
+  "alpha(effort+site) U(site)" = list(
+    alpha = alpha.additive, 
+    U = U.site, 
+    Phi = Phi.fixed1,
+    sigma = zero, 
+    GammaDoublePrime = zero, 
+    GammaPrime = zero
+  ),
+  "alpha(effort*site) U(site)" = list(
+    alpha = alpha.interaction, 
+    U = U.site, 
+    Phi = Phi.fixed1,
+    sigma = zero, 
+    GammaDoublePrime = zero, 
+    GammaPrime = zero
+  )
+)
+```
+
+## Step 7: Fitting All Models
+
+```{r fit-cmr-models}
+mabuya_model_1 <- mark(
+  data = mabuya.process,
+  ddl = mabuya.ddl,
+  model.parameters = model.list[["alpha(.) U(site)"]],
+  delete = TRUE
+)
+
+mabuya_model_2 <- mark(
+  data = mabuya.process,
+  ddl = mabuya.ddl,
+  model.parameters = model.list[["alpha(effort) U(site)"]],
+  delete = TRUE
+)
+
+mabuya_model_3 <- mark(
+  data = mabuya.process,
+  ddl = mabuya.ddl,
+  model.parameters = model.list[["alpha(site) U(site)"]],
+  delete = TRUE
+)
+
+mabuya_model_4 <- mark(
+  data = mabuya.process,
+  ddl = mabuya.ddl,
+  model.parameters = model.list[["alpha(effort+site) U(site)"]],
+  delete = TRUE
+)
+
+mabuya_model_5 <- mark(
+  data = mabuya.process,
+  ddl = mabuya.ddl,
+  model.parameters = model.list[["alpha(effort*site) U(site)"]],
+  delete = TRUE
+)
+```
+
+## Step 8: Model Selection and Best Model Results
+
+```{r cmr-model-selection}
+tb <- collect.models(lx = c("mabuya_model_1", "mabuya_model_2", 
+                            "mabuya_model_3", "mabuya_model_4", 
+                            "mabuya_model_5"))
+
+tbDT <- data.table(print(tb))
+
+print("Model selection table:")
+tbDT[, modelPosition := rownames(print(tb))] 
+                   
+best_model <- get(paste0("mabuya_model_", which(tbDT[,modelPosition == 1])))
+```
+
+## Step 9: Interpreting Best Model Results
+
+```{r cmr-results}
+betaTable <- data.table(best_model$results$beta, keep.rownames = TRUE)
+names(betaTable)[names(betaTable) == "rn"] <- "parameter"
+betaTable[, Z.value := estimate / se]
+betaTable[, p.value := 2 * (1 - pnorm(abs(Z.value)))]
+
+print("Parameter estimates from best CMR model:")
+print(betaTable)
+```
+
+This table shows us that alpha (resighting rate/detection probability) is significantly **HIGHER** in PARNA while U (population size) is significantly **LOWER** in PARNA. So, this means that we DO see/capture more in PARNA, and yet, the population size is considerably smaller. This is due to a clear pressure of invasive species and the potential effects of food supplementation.
+
+**Note**: We did not manage capture-recapture on Secondary islands due to impossible logistics.
+
+# Body Size Analysis
+
+Using head length as the most stable morphometric variable.
+
+## Step 1: Loading Size Data
+
+```{r load-size-data}
+mabuia_ds <- fread("data/Size_Data.csv")
+```
+
+## Step 2: Assessing Size Analysis Sampling Balance
+
+```{r size-sampling-balance}
+pointsCounts_size <- mabuia_ds[, .N, by = "site"]
+pointsCounts_size[site == "APA", pointsArea := 5.466]
+pointsCounts_size[site == "PARNA", pointsArea := 11.424]
+pointsCounts_size[site == "Secondary", pointsArea := 1.33]
+pointsCounts_size[, pointsDensity := N/pointsArea]
+pointsCounts_size[, propPoints := N/(sum(pointsCounts_size[, N]))]
+pointsCounts_size[, propSize := pointsArea/(sum(pointsCounts_size[, pointsArea]))]
+
+print("Size analysis sampling distribution:")
+print(pointsCounts_size)
+```
+
+There is indeed a bit of unbalance but it is not as critical as it seems:
+
+- **APA**: 47% points over 30% area
+- **PARNA**: 36% points over 62% area
+- **Secondary**: 16% points over 7% area
+
+## Step 3: Factor Level Setup
+
+```{r size-factors}
+mabuia_ds[, site := factor(site, levels = c("Secondary", "APA","PARNA"))] # "Secondary" as reference
+mabuia_ds[, sex := factor(sex)] # R will pick a reference, usually "F" alphabetically
+```
+
+## Step 4: Outlier Detection
+
+```{r outlier-detection}
+detect_outlier <- function(x) {
+  Quantile1 <- quantile(x, probs=.25)
+  Quantile3 <- quantile(x, probs=.75)
+  IQR = Quantile3-Quantile1
+  x > Quantile3 + (IQR*1.5) | x < Quantile1 - (IQR*1.5)
+}
+
+outliers <- detect_outlier(mabuia_ds$headLength[!is.na(mabuia_ds$headLength)])
+print(paste("Number of outliers detected:", sum(outliers)))
+```
+
+No outliers detected, indicating good data quality.
+
+## Step 5: Head Length Model
+
+```{r head-length-model}
+Head <- glm(headLength ~ sex + site,
+                 family = Gamma(link = "log"),
+                 data = mabuia_ds)
+summary(Head)
+```
+
+## Step 6: Model Diagnostics
+
+```{r head-model-diagnostics}
+hist(residuals(Head), main = "Residuals Distribution")
+par(mfrow=c(2,2))
+plot(Head)
+par(mfrow=c(1,1))
+```
+
+## Step 7: Estimated Marginal Means for Head Length
+
+```{r head-emmeans}
+emm_hF <- emmeans(Head, specs = ~ site + sex)
+pairwise_head <- pairs(emm_hF, adjust = "tukey")
+emm_hDT <- data.table(summary(emm_hF, type = "response"))
+
+print("Head length estimated marginal means:")
+print(emm_hDT)
+print("Pairwise comparisons:")
+print(pairwise_head)
+```
+
+## Step 8: Testing for Interaction Effects
+
+```{r head-interaction}
+Head_Interaction <- glm(headLength ~ sex * site,
+                        family = Gamma(link = "log"),
+                        data = mabuia_ds)
+summary(Head_Interaction)
+
+emm_interaction <- emmeans(Head_Interaction, specs = ~ sex * site)
+pairs_interaction_head <- pairs(emm_interaction, adjust = "tukey")
+print("Interaction model pairwise comparisons:")
+print(pairs_interaction_head)
+```
+
+## Step 9: Ecological Interpretation of Size Patterns
+
+```{r size-interpretation}
+dt <- as.data.table(emm_interaction)
+
+# Compare sex ratios across sites
+male_props <- table(mabuia_ds[sex == "M", site])/NROW(mabuia_ds[sex == "M",])
+female_props <- table(mabuia_ds[sex == "F", site])/NROW(mabuia_ds[sex == "F",])
+
+print("Proportion of males by site:")
+print(male_props)
+print("Proportion of females by site:")
+print(female_props)
+```
+
+# Injury Analysis (Autotomy)
+
+## Step 1: Creating Autotomy Variable
+
+```{r autotomy-variable}
+mabuia_ds[, has_autotomy := ifelse(autotomy == "", "No", "Yes")]
+```
+
+## Step 2: Autotomy Proportions and Statistical Test
+
+```{r autotomy-analysis}
+autotomy_table_3way <- table(mabuia_ds$site, mabuia_ds$has_autotomy)
+propTable <- prop.table(autotomy_table_3way, margin = 1)
+chi_test_autotomy_3way <- chisq.test(autotomy_table_3way)
+correctedProportion <- round(propTable*100, 2)
+colnames(correctedProportion) <- c("No autotomy signs", "Autotomy signs")
+
+print("Autotomy proportions by site (%):")
+print(correctedProportion)
+print("Chi-square test results:")
+print(chi_test_autotomy_3way)
+```
+
+Proportionally, we also have more autotomized individuals in the APA than in PARNA and half in secondary islands, which is also an indication of higher predation pressure on the main island. But, this is not significant. It would be interesting to increase our samples to be able to infer better.
+
+# Combined Size and Injury Visualization
+
+## Step 1: Preparing Interaction Data for Plotting
+
+```{r plot-interaction-prep}
+dt_df <- as.data.frame(dt)
+dt_df$site <- factor(dt_df$site, levels = c("Secondary", "APA", "PARNA"))
+
+# Get significance testing for interaction model
+pairs_interaction <- contrast(emm_interaction, method = "pairwise", adjust = "tukey")
+summary_pw_int <- summary(pairs_interaction)
+p_values_int <- summary_pw_int$p.value
+print(p_values_int)
+```
+
+## Step 2: Processing Significance Letters for Interaction
+
+```{r interaction-significance}
+contrast_names_raw_int <- as.character(summary_pw_int$contrast)
+p_value_names <- sapply(contrast_names_raw_int, function(contrast) {
+  parts <- strsplit(contrast, " - ")[[1]]
+  key1 <- gsub(" ", "", parts[1])
+  key2 <- gsub(" ", "", parts[2])
+  return(paste(key1, key2, sep = "-"))
+})
+names(p_values_int) <- p_value_names
+
+letters_result_int <- multcompLetters(p_values_int)
+significance_letters_int <- letters_result_int$Letters
+
+dt_df$key <- paste0(dt_df$sex, dt_df$site)
+dt_df$significance_group <- significance_letters_int[dt_df$key]
+dt_df$y_pos_letters <- dt_df$upper.CL + 0.03
+plot(dt_df)
+```
+
+## Step 3: Preparing Autotomy Data by Sex
+
+```{r autotomy-by-sex}
+# For males
+males_data <- mabuia_ds[mabuia_ds$sex == 'M', ]
+prop_table_males <- prop.table(table(males_data$site, males_data$has_autotomy), margin = 1)
+males_autotomy_df <- as.data.frame.matrix(prop_table_males)
+names(males_autotomy_df)[names(males_autotomy_df) == "Yes"] <- "injury_prop"
+males_autotomy_df$site <- rownames(males_autotomy_df)
+males_autotomy_df$sex <- "Males"
+
+# For females
+females_data <- mabuia_ds[mabuia_ds$sex == 'F', ]
+prop_table_females <- prop.table(table(females_data$site, females_data$has_autotomy), margin = 1)
+females_autotomy_df <- as.data.frame.matrix(prop_table_females)
+names(females_autotomy_df)[names(females_autotomy_df) == "Yes"] <- "injury_prop"
+females_autotomy_df$site <- rownames(females_autotomy_df)
+females_autotomy_df$sex <- "Females"
+
+# Combine
+autotomy_df_final <- rbind(males_autotomy_df, females_autotomy_df)
+autotomy_df_final$site <- factor(autotomy_df_final$site, levels = c("Secondary", "APA", "PARNA"))
+autotomy_df_final$sex <- factor(autotomy_df_final$sex, levels = c("Females", "Males"))
+plot(autotomy_df_final)
+```
+
+## Step 4: Formatting for Unified Plot
+
+```{r unified-plot-prep}
+dt_df$sex <- ifelse(dt_df$sex == "F", "Females", "Males")
+dt_df$sex <- factor(dt_df$sex, levels = c("Females", "Males"))
+
+# Create unified plotting dataset
+# Select and rename columns from head length data
+plot_data_head <- data.frame(
+  site = dt_df$site,
+  sex = dt_df$sex,
+  measurement = "Head Length (cm)",
+  value = dt_df$emmean,
+  lower_ci = dt_df$lower.CL,
+  upper_ci = dt_df$upper.CL,
+  significance_group = dt_df$significance_group
+)
+
+# Select and rename columns from injury data
+plot_data_injury <- data.frame(
+  site = autotomy_df_final$site,
+  sex = autotomy_df_final$sex,
+  measurement = "Proportion Injury",
+  value = autotomy_df_final$injury_prop,
+  lower_ci = NA, # No error bars for injury rate
+  upper_ci = NA,
+  significance_group = NA # No significance letters for injury rate
+)
+
+plot_data_unified <- rbind(plot_data_head, plot_data_injury)
+plot(plot_data_unified)
+```
+  
+### Creating the Final Size and Injury Plot
+
+```{r unified-plot}
+body_size_plot <- ggplot(
+  plot_data_unified,
+  aes(x = site, y = value, fill = site, color = site)
+) +
+    # --- Geoms that use SUBSETS of the data ---
+  # Add bars ONLY for the injury rate data
+  geom_bar(
+    data = plot_data_unified[plot_data_unified$measurement == "Proportion Injury", ],
+    stat = "identity", color = "black", alpha = 0.8
+  ) +
+  # Add error bars ONLY for the head length data
+  geom_errorbar(
+    data = plot_data_unified[plot_data_unified$measurement == "Head Length (cm)", ],
+    aes(ymin = lower_ci, ymax = upper_ci), width = 0.25, linewidth = 1
+  ) +
+  # Add points ONLY for the head length data
+  geom_point(
+    data = plot_data_unified[plot_data_unified$measurement == "Head Length (cm)", ],
+    size = 4, stroke = 1.5
+  ) +
+  # Add text ONLY for the head length data
+  geom_text(
+    data = plot_data_unified[plot_data_unified$measurement == "Head Length (cm)", ],
+    aes(y = upper_ci + 0.1, label = significance_group), # Increase offset for % scale
+    color = "black", size = 6, fontface = "bold"
+  ) +
+  
+  # --- Faceting ---
+  # Facet by both sex and measurement, and allow y-axes to be independent
+  facet_grid(
+    measurement ~ sex,
+    scales = "free_y"
+  ) +
+  
+  # --- Scales and Labels ---
+  scale_color_viridis_d(option = "D") +
+  scale_fill_viridis_d(option = "D") +
+
+  # --- Theming ---
+  theme_bw(base_size = 14) +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 16),
+    strip.text = element_text(size = 12, face = "bold"),
+    strip.placement = "outside", # Ensures strips are next to the axis
+    axis.title = element_text(face = "bold"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    # Add a bit more space between facets
+    panel.spacing = unit(1.0, "lines"),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+  )
+```
+
+# Summarizing the findings:
+
+## Results from point counts: 
+```{r summary}
+summary(emm_density_hierarchical, infer = TRUE)
+density_plot
+```
+
+## Results from CMR:
+
+```{r summary2}
+print(betaTable)
+```
+
+## Results from size analysis:
+
+```{r summary3}
+body_size_plot
+```
+
+## Results from sublethal injuries:
+
+```{r summary4}
+print(correctedProportion)
+print(chi_test_autotomy_3way)
+
+```
+
+
+## Saving the plots for manuscript
+
+```{r saving}
+ggsave(
+  filename = "outputs/Density_Plot.png", # The name of the output file
+  plot = density_plot,                        # The plot object to save
+  width = 12,                                  # Width of the image in inches
+  height = 6,                                 # Height of the image in inches
+  dpi = 300,                                  # Dots per inch (standard for publication)
+  bg = "white"                                # Set a white background
+)
+
+# Save as a high-resolution TIFF file
+ggsave(
+  filename = "outputs/Density_Plot.tiff",
+  plot = density_plot,
+  width = 12,
+  height = 6,
+  dpi = 300
+)
+
+ggsave(
+  filename = "outputs/Size_Injury.png",
+  plot = body_size_plot,
+  width = 8,   # Keep it reasonably wide for the two columns
+  height = 7,  # A bit taller to accommodate the stacked facets
+  dpi = 300,
+  bg = "white"
+)
+
+ggsave(
+  filename = "outputs/Size_Injury.tiff",
+  plot = body_size_plot,
+  width = 8,   # Keep it reasonably wide for the two columns
+  height = 7,  # A bit taller to accommodate the stacked facets
+  dpi = 300,
+  bg = "white"
+)
+```

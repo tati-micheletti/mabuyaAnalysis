@@ -1,0 +1,151 @@
+LocationID,Date,Time,Location,Site,Island,Habitat,Temp_oC,UTM,NOR,EAS,Counts,ObsMin
+IPA56,2/11/2016,16:25,3 Paus,APA,Main,Urbana,29,25,564037,9574144,3,7
+IPA106,11/8/2016,8:16,Abreus,PARNA,Main,Arbustiva Alta,30,25,564199,9573143,1,7
+IPA107,11/8/2016,8:30,Abreus,PARNA,Main,Arborea Baixa,30,25,564452,9572968,1,7
+IPA108,11/8/2016,8:45,Abreus,PARNA,Main,Gramínea,30,25,564676,9572953,1,7
+IPA109,11/8/2016,9:07,Abreus,PARNA,Main,Pedreira (costa),30,25,565228,9573056,0,7
+IPA110,11/8/2016,9:30,Abreus,PARNA,Main,Pedreira (costa),31,25,565055,9573102,0,7
+IPA111,11/8/2016,9:50,Abreus,PARNA,Main,Arbustiva Baixa,32,25,564632,9573082,1,7
+IPA112,11/8/2016,11:40,Abreus,PARNA,Main,Urbana,32,25,566622,9576207,0,7
+IPA02,11/5/2015,17:00,Air France,PARNA,Main,Arbustiva Baixa,29,25,566770,9576230,0,7
+IPA83,2/25/2016,15:29,Air France,PARNA,Main,Pedreira (costa),28,25,566585,9575815,2,7
+IPA84,2/25/2016,16:37,Air France,PARNA,Main,Urbana,28,25,566726,9576421,5,7
+IPA96,11/1/2016,10:25,Baia Golfinhos,PARNA,Main,Arborea Alta,29,25,561388,9573519,7,7
+IPA97,11/1/2016,11:00,Baia Golfinhos,PARNA,Main,Arborea Alta,30,25,561409,9573444,2,7
+IPA98,11/1/2016,11:15,Baia Golfinhos,PARNA,Main,Pedreira (costa),31,25,561410,9573378,1,7
+IPA51,2/8/2016,11:30,Boldro,APA,Main,Urbana,30,25,563793,9574459,1,7
+IPA87,10/29/2016,10:00,Capim Acu,PARNA,Main,Arborea Alta,28,25,561645,9572801,1,7
+IPA95,10/29/2016,17:22,Caracas,PARNA,Main,Gramínea,28,25,563807,9571603,0,7
+IPA01,11/5/2015,15:40,Casa da Marinha,APA,Main,Arborea Baixa,31,25,566076,9575213,4,7
+IPA03,11/6/2015,7:10,Cemiterio,APA,Main,Pedreira,28,25,565186,9575174,8,7
+IPA99,11/4/2016,9:55,Entrada Atalaia,APA,Main,Urbana,30,25,566133,9574637,3,7
+IPA101,11/7/2016,15:00,Estrada Americano,APA,Main,Arborea Alta,30,25,563001,9574518,3,7
+IPA102,11/7/2016,15:20,Estrada Americano,APA,Main,Arbustiva Alta,30,25,562895,9574199,0,7
+IPA103,11/7/2016,15:30,Estrada Cacimba,APA,Main,Arborea Baixa,30,25,562500,9574315,2,7
+IPA60,2/17/2016,11:38,Estrada Prox. Aeroporto,APA,Main,Arborea Alta,29,25,563375,9573314,3,7
+IPA61,2/17/2016,12:00,Estrada Prox. Aeroporto,APA,Main,Arborea Alta,29,25,562831,9574006,0,7
+IPA28,11/19/2015,8:40,Estrada Velha Atalaia,APA,Main,Arborea Baixa,29,25,565446,9573708,1,7
+IPA29,11/19/2015,9:00,Estrada Velha Atalaia,APA,Main,Arborea Alta,29,25,565363,9573746,0,7
+IPA30,11/19/2015,9:20,Estrada Velha Atalaia,APA,Main,Arborea Alta,31,25,564992,9573694,3,7
+IPA31,11/19/2015,10:00,Estrada Velha Atalaia,APA,Main,Arborea Alta,30,25,564763,9573728,1,7
+IPA32,11/19/2015,10:30,Estrada Velha Atalaia,APA,Main,Arbustiva Alta,32,25,564406,9573703,0,7
+IPA66,2/19/2016,10:15,Floresta Nova,APA,Main,Urbana,31,25,565122,9574508,9,7
+IPA67,2/19/2016,10:53,Floresta Nova,APA,Main,Urbana,31,25,565154,9574557,0,7
+IPA68,2/19/2016,11:10,Floresta Nova,APA,Main,Urbana,30,25,565363,9574528,1,7
+IPA69,2/19/2016,11:40,Floresta Nova,APA,Main,Urbana,31,25,565483,9574593,2,7
+IPA70,2/19/2016,11:55,Floresta Nova,APA,Main,Urbana,31,25,565640,9574896,2,7
+IPA71,2/19/2016,12:10,Floresta Nova,APA,Main,Urbana,30,25,565825,9574667,2,7
+IPA72,2/19/2016,12:25,Floresta Nova,APA,Main,Urbana,30,25,566110,9574743,4,7
+IPA73,2/24/2016,13:41,Floresta Velha,APA,Main,Urbana,31,25,564749,9574686,2,7
+IPA74,2/24/2016,14:00,Floresta Velha,APA,Main,Urbana,31,25,564927,9574831,0,7
+IPA75,2/24/2016,14:15,Floresta Velha,APA,Main,Urbana,30,25,565068,9574868,0,7
+IPA76,2/24/2016,14:44,Floresta Velha,APA,Main,Urbana,30,25,565082,9575001,2,7
+IPA77,2/24/2016,14:54,Floresta Velha,APA,Main,Arbustiva Alta,30,25,565106,9575208,2,7
+IPA78,2/24/2016,15:21,Floresta Velha,APA,Main,Arborea Alta,31,25,565330,9575117,5,7
+IPA79,2/24/2016,15:49,Floresta Velha,APA,Main,Urbana,30,25,565215,9574959,0,7
+IPA19,11/12/2015,10:50,Forte Boldro,APA,Main,Pedreira,33,25,563117,9574813,6,7
+IPA16,11/11/2015,14:58,ICMBio,APA,Main,Urbana,30,25,563730,9574462,3,7
+IPA53,2/9/2016,11:40,Ilha do Chapeu,Secundaria,Secondary,Arbustiva Baixa,30,25,564214,9572107,1,7
+IPA22,11/16/2015,13:00,Ilha do Meio,Secundaria,Secondary,Gramínea,34,25,567504,9577804,0,7
+IPA23,11/16/2015,13:40,Ilha do Meio,Secundaria,Secondary,Arbustiva Baixa,34,25,567391,9577753,0,7
+IPA24,11/16/2015,14:00,Ilha do Meio,Secundaria,Secondary,Arbustiva Alta,33,25,567312,9577765,4,7
+IPA25,11/16/2015,14:30,Ilha do Meio,Secundaria,Secondary,Arbustiva Alta,33,25,567416,9577843,2,7
+IPA26,11/18/2015,14:11,Ilha do Meio,Secundaria,Secondary,Pedreira (costa),37,25,567433,9577951,11,7
+IPA27,11/18/2015,14:30,Ilha do Meio,Secundaria,Secondary,Pedreira (costa),34,25,567384,9577954,12,7
+IPA126,4/12/2018,10:00,Ilha do Meio,Secundaria,Secondary,Arborea Baixa,31,25,567403,9577720,5,7
+IPA127,4/12/2018,10:15,Ilha do Meio,Secundaria,Secondary,Arborea Alta,30,25,567278,9577833,13,7
+IPA128,4/12/2018,10:30,Ilha do Meio,Secundaria,Secondary,Arborea Alta,30,25,567230,9577852,6,7
+IPA129,4/12/2018,10:40,Ilha do Meio,Secundaria,Secondary,Arborea Alta,31,25,567245,9577880,6,7
+IPA130,4/12/2018,10:59,Ilha do Meio,Secundaria,Secondary,Arborea Alta,30,25,567275,9577903,7,7
+IPA131,4/12/2018,11:17,Ilha do Meio,Secundaria,Secondary,Arborea Alta,31,25,567320,9577917,7,7
+IPA132,4/12/2018,11:31,Ilha do Meio,Secundaria,Secondary,Arborea Alta,30,25,567330,9577890,8,7
+IPA133,4/12/2018,11:43,Ilha do Meio,Secundaria,Secondary,Arborea Alta,31,25,567323,9577842,1,7
+IPA134,4/12/2018,11:55,Ilha do Meio,Secundaria,Secondary,Arborea Alta,30,25,567385,9577860,8,7
+IPA135,4/12/2018,12:08,Ilha do Meio,Secundaria,Secondary,Arborea Alta,31,25,567208,9577866,13,7
+IPA33,11/20/2015,12:10,Ilha Rata,Secundaria,Secondary,Arborea Baixa,32,25,568044,9578511,3,7
+IPA34,11/20/2015,12:40,Ilha Rata,Secundaria,Secondary,Arborea Baixa,33,25,568081,9578562,7,7
+IPA35,11/20/2015,14:22,Ilha Rata,Secundaria,Secondary,Urbana,30,25,567920,9578588,13,7
+IPA36,11/23/2015,10:50,Ilha Rata,Secundaria,Secondary,Arbustiva Alta,29,25,567951,9578616,4,7
+IPA37,11/23/2015,12:30,Ilha Rata,Secundaria,Secondary,Pedreira,32,25,567901,9578656,8,7
+IPA38,11/23/2015,13:20,Ilha Rata,Secundaria,Secondary,Gramínea,29,25,568031,9578883,0,7
+IPA39,11/23/2015,13:40,Ilha Rata,Secundaria,Secondary,Gramínea,29,25,568119,9578885,1,7
+IPA40,11/23/2015,14:00,Ilha Rata,Secundaria,Secondary,Gramínea,28,25,567918,9578833,0,7
+IPA41,11/23/2015,14:40,Ilha Rata,Secundaria,Secondary,Urbana,29,25,567827,9578503,19,7
+IPA136,4/17/2018,11:00,Ilha Rata,Secundaria,Secondary,Arborea Alta,30,25,567944,9578585,5,7
+IPA137,4/17/2018,11:07,Ilha Rata,Secundaria,Secondary,Arborea Alta,31,25,567688,9578683,2,7
+IPA138,4/17/2018,11:19,Ilha Rata,Secundaria,Secondary,Arborea Alta,30,25,568006,9578578,3,7
+IPA139,4/17/2018,11:27,Ilha Rata,Secundaria,Secondary,Arborea Alta,30,25,568024,9578598,2,7
+IPA140,4/17/2018,11:38,Ilha Rata,Secundaria,Secondary,Arborea Alta,31,25,568061,9578590,5,7
+IPA141,4/17/2018,11:45,Ilha Rata,Secundaria,Secondary,Arborea Alta,31,25,568089,9578590,3,7
+IPA142,4/17/2018,11:55,Ilha Rata,Secundaria,Secondary,Arborea Alta,30,25,568124,9578594,2,7
+IPA143,4/17/2018,12:05,Ilha Rata,Secundaria,Secondary,Arborea Alta,30,25,568166,9578578,4,7
+IPA144,4/17/2018,12:18,Ilha Rata,Secundaria,Secondary,Arborea Alta,31,25,568145,9578629,3,7
+IPA145,4/17/2018,12:30,Ilha Rata,Secundaria,Secondary,Arborea Alta,30,25,568227,9578607,1,7
+IPA18,11/12/2015,10:20,Lanchonete Forte Boldro,APA,Main,Urbana,31,25,563175,9574775,8,7
+IPA88,10/29/2016,15:20,Leao,PARNA,Main,Arbustiva Baixa,28,25,562612,9572330,1,7
+IPA89,10/29/2016,15:35,Leao,PARNA,Main,Arborea Alta,28,25,562585,9572383,1,7
+IPA90,10/29/2016,15:46,Leao,PARNA,Main,Gramínea,28,25,562565,9572529,0,7
+IPA91,10/29/2016,16:00,Leao,PARNA,Main,Arbustiva Alta,29,25,562558,9572670,0,7
+IPA92,10/29/2016,16:15,Leao,PARNA,Main,Praia,30,25,562591,9572266,0,7
+IPA93,10/29/2016,16:25,Leao,PARNA,Main,Arborea Alta,29,25,562420,9572257,2,7
+IPA94,10/29/2016,16:40,Leao,PARNA,Main,Pedreira (costa),28,25,562312,9572239,2,7
+IPA100,11/4/2016,16:00,Mangue Sueste,PARNA,Main,Arborea Alta,28,25,563843,9572883,3,7
+IPA10,11/9/2015,10:00,Mirante Caracas,PARNA,Main,Gramínea,32,25,563844,9571644,0,7
+IPA44,11/25/2015,15:56,Mirante Golfinho,APA,Main,Arborea Alta,33,25,561446,9573517,7,7
+IPA11,11/9/2015,10:30,Mirante Sueste,APA,Main,Arbustiva Alta,32,25,563898,9572070,2,7
+IPA113,11/10/2016,9:45,Morro Viuvinha,Secundaria,Secondary,Pedreira (costa),30,25,562296,9571862,2,7
+IPA09,11/9/2015,8:50,Pedreira do Sueste,PARNA,Main,Arborea Baixa,29,25,564042,9573024,1,7
+IPA55,2/10/2016,16:00,Pico,PARNA,Main,Arborea Alta,29,25,564034,9574859,5,7
+IPA54,2/10/2016,15:45,Piquinho,PARNA,Main,Pedreira,29,25,564031,9574774,6,7
+IPA146,4/19/2018,10:00,Pista Aeroporto,APA,Main,Arborea Alta,29,25,564685,9574531,6,7
+IPA147,4/19/2018,10:19,Pista Aeroporto,APA,Main,Arborea Alta,29,25,564789,9574337,1,7
+IPA148,4/19/2018,10:32,Pista Aeroporto,APA,Main,Arbustiva Alta,31,25,564665,9574118,0,7
+IPA149,4/19/2018,10:50,Pista Aeroporto,APA,Main,Arborea Alta,29,25,564966,9573984,0,7
+IPA150,4/19/2018,11:08,Pista Aeroporto,APA,Main,Arborea Alta,29,25,565336,9574003,2,7
+IPA15,11/10/2015,11:22,Pontinha,PARNA,Main,Pedreira,32,25,567320,9574311,1,7
+IPA49,2/8/2016,7:50,Praia de Pedra,PARNA,Main,Pedreira (costa),28,25,563436,9572170,18,7
+IPA50,2/8/2016,8:10,Praia de Pedra,PARNA,Main,Gramínea,28,25,563348,9572086,0,7
+IPA20,11/12/2015,11:10,Praia do Americano,APA,Main,Pedreira,32,25,563019,9574665,7,7
+IPA21,11/12/2015,11:50,Praia do Bode,APA,Main,Pedreira,32,25,562803,9574575,8,7
+IPA47,2/6/2016,13:11,Praia do Sancho,PARNA,Main,Pedreira (costa),30,25,561867,9574097,16,7
+IPA48,2/6/2016,16:14,Praia do Sancho,PARNA,Main,Areia (transicao c/ vegetacao),31,25,561714,9573797,1,7
+IPA52,2/9/2016,9:00,Quixaba,APA,Main,Arborea Alta,28,25,562528,9573878,1,7
+IPA86,10/26/2016,9:15,Quixaba,APA,Main,Arborea Alta,28,25,562542,9573834,0,7
+IPA57,2/17/2016,10:00,Sítio do Leao,APA,Main,Arborea Alta,29,25,563009,9572406,1,7
+IPA58,2/17/2016,10:30,Sítio do Leao,APA,Main,Arbustiva Alta,30,25,563393,9572513,0,7
+IPA05,11/6/2015,10:15,Trilha Capim Acu,PARNA,Main,Arbustiva Baixa,32,25,561199,9572791,1,7
+IPA06,11/6/2015,11:00,Trilha Capim Acu,PARNA,Main,Arborea Alta,30,25,561278,9572621,1,7
+IPA07,11/6/2015,11:40,Trilha Capim Acu,PARNA,Main,Arborea Alta,30,25,561008,9572454,2,7
+IPA08,11/6/2015,12:30,Trilha Capim Acu,PARNA,Main,Arborea Alta,32,25,560288,9572127,1,7
+IPA62,2/18/2016,10:43,Trilha Capim Acu,PARNA,Main,Urbana,31,25,562217,9573690,3,7
+IPA63,2/18/2016,10:55,Trilha Capim Acu,PARNA,Main,Arborea Baixa,31,25,562129,9573685,2,7
+IPA64,2/18/2016,11:05,Trilha Capim Acu,PARNA,Main,Arborea Alta,30,25,561837,9573128,1,7
+IPA65,2/18/2016,11:15,Trilha Capim Acu,PARNA,Main,Arborea Alta,30,25,561675,9572841,1,7
+IPA04,11/6/2015,7:40,Trilha Forte Boldro,APA,Main,Arborea Alta,28,25,563381,9574760,1,7
+IPA17,11/12/2015,10:00,Trilha Forte Boldro,APA,Main,Arborea Alta,30,25,563290,9574706,4,7
+IPA45,11/25/2015,16:20,Trilha Golfi/Sancho,APA,Main,Arborea Alta,33,25,561386,9573639,8,7
+IPA46,11/25/2015,16:40,Trilha Golfi/Sancho,APA,Main,Arborea Alta,33,25,561553,9573737,5,7
+IPA42,11/25/2015,15:00,Trilha Golfinho,APA,Main,Arbustiva Baixa,33,25,562181,9573894,1,7
+IPA43,11/25/2015,15:20,Trilha Golfinho,APA,Main,Arborea Alta,32,25,561971,9573782,2,7
+IPA114,11/11/2016,8:00,Trilha Leao / Capim Acu,PARNA,Main,Arbustiva Baixa,30,25,562134,9572268,0,7
+IPA115,11/11/2016,8:15,Trilha Leao / Capim Acu,PARNA,Main,Pedreira,31,25,561961,9572280,1,7
+IPA116,11/11/2016,8:45,Trilha Leao / Capim Acu,PARNA,Main,Gramínea,31,25,561564,9571937,0,7
+IPA117,11/11/2016,9:23,Trilha Leao / Capim Acu,PARNA,Main,Pedreira,31,25,561015,9571734,0,7
+IPA118,11/11/2016,10:00,Trilha Leao / Capim Acu,PARNA,Main,Pedreira,31,25,560503,9571596,2,7
+IPA12,11/10/2015,9:00,Trilha Longa Atalaia,PARNA,Main,Arbustiva Alta,33,25,566308,9574218,1,7
+IPA13,11/10/2015,9:50,Trilha Longa Atalaia,PARNA,Main,Gramínea,33,25,566784,9573805,1,7
+IPA14,11/10/2015,10:48,Trilha Longa Atalaia,PARNA,Main,Arborea Baixa,31,25,566935,9573995,4,7
+IPA119,11/14/2016,9:15,Trilha Longa Atalaia,PARNA,Main,Arborea Baixa,31,25,566532,9574089,1,7
+IPA120,11/14/2016,10:15,Trilha Longa Atalaia,PARNA,Main,Gramínea,33,25,566890,9574238,0,7
+IPA121,11/14/2016,10:30,Trilha Longa Atalaia,PARNA,Main,Pedreira,32,25,567316,9574278,2,7
+IPA122,11/14/2016,11:05,Trilha Longa Atalaia,PARNA,Main,Arbustiva Baixa,33,25,567110,9574449,0,7
+IPA123,11/14/2016,11:25,Trilha Longa Atalaia,PARNA,Main,Pedreira (costa),33,25,567017,9574736,0,7
+IPA124,11/14/2016,11:50,Trilha Longa Atalaia,PARNA,Main,Pedreira (costa),31,25,566952,9574881,4,7
+IPA125,11/14/2016,12:00,Trilha Longa Atalaia,PARNA,Main,Gramínea,32,25,566901,9575173,1,7
+IPA85,2/26/2016,15:03,Vila do Trinta,APA,Main,Arborea Alta,29,25,566032,9575134,4,7
+IPA80,2/24/2016,16:00,Vila dos Remedios,APA,Main,Arborea Alta,30,25,565539,9575042,5,7
+IPA81,2/24/2016,16:30,Vila dos Remedios,APA,Main,Arborea Alta,29,25,565288,9575352,0,7
+IPA82,2/24/2016,16:50,Vila dos Remedios,APA,Main,Urbana,29,25,565537,9575807,4,7
+IPA104,11/7/2016,15:50,Vila dos Remedios,APA,Main,Urbana,30,25,565237,9574808,0,7
+IPA105,11/7/2016,16:10,Vila dos Remedios,APA,Main,Urbana,30,25,565379,9575309,0,7
+IPA59,2/17/2016,11:00,Xareu,APA,Main,Arbustiva Alta,30,25,563486,9572703,0,7
